@@ -1,0 +1,36 @@
+// Copyright (c) 2002-2014 JavaMOP Team. All Rights Reserved.
+package mop;
+
+import java.io.*;
+import java.util.*;
+
+// This property specifies that a program 
+// always calls the hasnext method  before 
+// the next method of an iterator. 
+// It is monitored for the pattern fail 
+// condition.  This property is borrowed 
+// from tracematches (see ECOOP'07 
+// http://abc.comlab.ox.ac.uk/papers)
+
+HasNext(Object i) {
+	event start before(Object i) : 
+              call(* Object.start()) && target(i) {}
+	event modify before(Object i) : 
+              call(* Object.modify()) 
+              && target(i) {}
+	event commit before(Object i) : 
+              call(* Object.rollback()) 
+              && target(i) {}
+	event rollback before(Object i) : 
+              call(* Object.rollback()) 
+              && target(i) {}
+
+	ere : (start modify* rollback* commit)* 
+        
+
+	@fail {
+	  System.err.println(
+             "Transaction Failed. start modify* commit not fulfilled");
+          __RESET;
+	}
+}
